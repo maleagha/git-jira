@@ -18,8 +18,7 @@
 "dependencies" : { 
   "request" : ">=2.9.202",
   "optimist" : ">=0.3.5",
-  "read": ">=1.0.4",
-  "step":
+  "read": ">=1.0.4"
 },
   "author": "",
   "license": "BSD"
