@@ -1,5 +1,5 @@
 {
-  "JIRA_HOST":"kelpie9:8081",
+  "JIRA_HOST":"jira01.corp.linkedin.com:8443",
   "SEARCH_PATH":"/rest/api/2/search/",
   "ISSUE_PATH":"/rest/api/2/issue/"
 }

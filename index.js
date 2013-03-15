@@ -32,6 +32,7 @@ if (argv && argv.status) {
       protocol:'https',
       pathname:CONFIGS.ISSUE_PATH + argv.status}),
     qs:{fields:'summary,id,status,assignee,description'},
+    method: 'GET',
     json:{}
   };
   getAllHeaders(function(headers) {
@@ -49,7 +50,47 @@ if (argv && argv.status) {
 
 // --resolve MOB-123 command
 if (argv && argv.resolve) {
-
+  var resolution = "Fixed";
+  if (argv.resolution) {
+    resolution = argv.resolution;
+  }
+  json = {
+    'fields': {
+      'resolution': {
+        'name': resolution
+      }
+    },
+    'transition': {
+      'id': '5'
+    }
+  };
+  if (argv.comment) {
+    json.update = {
+      'comment': [
+        {
+          'add': {
+            'body': argv.comment
+          }
+        }
+      ]
+    };
+  }
+  var options = {
+    url:url.format({
+      host:CONFIGS.JIRA_HOST,
+      protocol:'https',
+      pathname:CONFIGS.ISSUE_PATH + argv.resolve + '/transitions'}),
+    method: 'POST',
+    json: json
+  };
+  getAllHeaders(function(headers) {
+    options.headers = headers;
+    request(options, function(err, response, body){
+      console.log(err);
+      console.log(response.statusCode);
+      console.log(body);
+    });
+  });
 }
 
 // --commit MOB-123 command
