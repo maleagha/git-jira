@@ -1,0 +1,23 @@
+{
+  "name": "git-jira",
+  "version": "0.0.0",
+  "description": "This module integrates JIRA into Git",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maleagha/git-jira.git"
+  },
+  "keywords": [
+    "git",
+    "jira",
+    "rb"
+  ],
+"dependencies" : { 
+"request" : ">=2.9.202"
+},
+  "author": "",
+  "license": "BSD"
+}
