@@ -18,7 +18,8 @@
 "dependencies" : { 
   "request" : ">=2.9.202",
   "optimist" : ">=0.3.5",
-  "read": ">=1.0.4"
+  "read": ">=1.0.4",
+  "colors": ">=0.6.0-1"
 },
   "author": "",
   "license": "BSD"

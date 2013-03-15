@@ -7,17 +7,17 @@ var exec = require('child_process').exec;
 var argv = require('optimist').argv;
 var read = require('read');
 var url = require('url');
+var colors = require('colors');
 
 const CONFIGS = require('./configs/config.json');
-const MAX_BRANCH_NAME_LENGTH = 50;
+const MAX_BRANCH_NAME_LENGTH = 60;
 
 //--branch MOB-123 command
 if (argv && argv.branch) {
   if (argv.branch === 'status') {
     //print out the list of current branches and their corresponding JIRA status
     var regEx = /(MOB-\d+).*/;
-    var branchIds = getAllBranchNames(regEx);
-    queryJiraByBranchIds(branchIds);
+    getAllBranchNames(regEx);
   } else {
     //create a branch based on the given jira ID
     createBranchByJiraId();
@@ -38,12 +38,7 @@ if (argv && argv.status) {
   getAllHeaders(function(headers) {
     options.headers = headers;
     request(options, function(err, response, body){
-      sys.puts('---------------------------------------------');
-      sys.puts('KEY:       ' + body && body.key || '');
-      sys.puts('SUMMARY:  ' + body && body.fields && body.fields.summary || '');
-      sys.puts('STATUS:   ' + body && body.fields && body.fields.status && body.fields.status.name);
-      sys.puts('ASSIGNEE: ' + body && body.fields && body.fields.assignee && body.fields.assignee.displayName);
-      sys.puts('---------------------------------------------');
+      printSingleStatus(body);
     });
   });
 }
@@ -159,8 +154,8 @@ function getAllBranchNames(regEx) {
         branchIds.push(id);
       }
     });
-    sys.puts('list of branch ids: ', branchIds);
-    return branchIds;
+    //sys.puts('list of branch ids: ', branchIds);
+    queryJiraByBranchIds(branchIds);
   });
 }
 
@@ -202,6 +197,69 @@ function createBranchByJiraId() {
   });
 }
 
-function queryJiraByBranchIds(branchIds) {
+function printSingleStatus(body) {
+  sys.puts('---------------------------------------------');
+  sys.puts('KEY:       ' + body && body.key || '');
+  sys.puts('SUMMARY:  ' + body && body.fields && body.fields.summary || '');
+  sys.puts('STATUS:   ' + body && body.fields && body.fields.status && body.fields.status.name);
+  sys.puts('ASSIGNEE: ' + body && body.fields && body.fields.assignee && body.fields.assignee.displayName);
+  sys.puts('---------------------------------------------');
+}
 
+function buildJqlForBranchIds(branchIds) {
+  (branchIds || []).forEach(function(id, index){
+    branchIds[index] = 'issueKey=' + id;
+  });
+
+  return branchIds.join(' OR ');
+}
+function queryJiraByBranchIds(branchIds) {
+  var options = {
+    url:url.format({
+      host:CONFIGS.JIRA_HOST,
+      protocol:'https',
+      pathname:CONFIGS.SEARCH_PATH}),
+    qs : {jql:buildJqlForBranchIds(branchIds),
+      fields : 'summary,id,status,assignee,description'},
+    json : {}
+  };
+
+  request(options, function (err, response, body) {
+    if(err) {
+      sys.puts('Sorry, something went wrong!',err);
+      return;
+    }
+    const HEADER = {};
+    var issues = (body.issues || []);
+    issues.unshift(HEADER);
+    issues.forEach(printBranchStatus);
+
+  });
+}
+
+function printBranchStatus(issue) {
+  const SPACES = '                                                            ';
+  var branchName = issue.key || 'BRANCH\t';
+  var issueStatus = issue && issue.fields && issue.fields.status && issue.fields.status.name || 'STATUS';
+  var issueSummary = (issue && issue.fields && issue.fields.summary || 'SUMMARY') + SPACES;
+  issueSummary = issueSummary.slice(0, MAX_BRANCH_NAME_LENGTH);
+
+  var assignee = issue && issue.fields && issue.fields.assignee && issue.fields.assignee.displayName || 'ASSIGNEE';
+  var items = [branchName,issueSummary,assignee,issueStatus];
+  var statusStr = items.join('\t\t');
+
+  switch(issueStatus) {
+    case 'Closed':
+      sys.puts(statusStr.grey);
+      break;
+    case 'Open':
+      sys.puts(statusStr.red);
+      break;
+    case 'Resolved':
+      sys.puts(statusStr.green);
+      break;
+    case 'STATUS':
+      sys.puts(statusStr.bold.white);
+      break;
+  }
 }
