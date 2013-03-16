@@ -4,19 +4,22 @@ var sys = require('sys');
 var request = require('request');
 var url = require('url');
 var colors = require('colors');
+var Utils = require('./utils');
+var Status = require('./status');
 
 const CONFIGS = require('../configs/config.json');
 const MAX_BRANCH_NAME_LENGTH = 60;
 
 
-function branch() {
-  if (argv.branch === 'status') {
+function branch(branch) {
+  if (branch === 'status') {
     //print out the list of current branches and their corresponding JIRA status
     var regEx = /(MOB-\d+).*/;
     getAllBranchNames(regEx);
   } else {
-    //create a branch based on the given jira ID
-    createBranchByJiraId();
+    //create a branch based on the given jira ID and mark the bug as in progress.
+    createBranchByJiraId(branch);
+    changeStatusToInProgress(branch);
   }
 }
 
@@ -30,24 +33,24 @@ function getAllBranchNames(regEx) {
         branchIds.push(id);
       }
     });
-    //sys.puts('list of branch ids: ', branchIds);
     queryJiraByBranchIds(branchIds);
   });
 }
 
-function createBranchByJiraId() {
+function createBranchByJiraId(jiraId) {
   var options = {
     url:url.format({
       host:CONFIGS.JIRA_HOST,
       protocol:'https',
-      pathname:CONFIGS.ISSUE_PATH + argv.branch}),
+      pathname:CONFIGS.ISSUE_PATH + jiraId}),
     qs : {fields : 'summary,id,status,assignee,description'},
     json : {}
   };
   //first gets JIRA ticket's information
   request(options, function (err, response, body) {
-    if (err) {
-      sys.puts('something went wrong:' + err);
+    if (err || body.errors) {
+      sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
+      return;
     }
     var jiraKey = (body && body.key || '');
     var jiraSummary = body && body.fields && body.fields.summary || '';
@@ -73,6 +76,32 @@ function createBranchByJiraId() {
   });
 }
 
+function changeStatusToInProgress(jiraId) {
+  var json = {
+    'transition': {
+      'id': '4'
+    }
+  };
+  var options = {
+    url: url.format({
+      host: CONFIGS.JIRA_HOST,
+      protocol: 'https',
+      pathname: CONFIGS.ISSUE_PATH + jiraId + '/transitions'}),
+    method: 'POST',
+    json: json
+  };
+  Utils.getAllHeaders(function (headers) {
+    options.headers = headers;
+    request(options, function (err, response, body) {
+      if (err || body.errors) {
+        sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
+        return;
+      }
+      Status.status(jiraId);
+    });
+  });
+}
+
 function queryJiraByBranchIds(branchIds) {
   var options = {
     url:url.format({
@@ -85,8 +114,8 @@ function queryJiraByBranchIds(branchIds) {
   };
 
   request(options, function (err, response, body) {
-    if(err) {
-      sys.puts('Sorry, something went wrong!',err);
+    if (err || body.errors) {
+      sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
       return;
     }
     const HEADER = {};

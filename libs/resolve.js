@@ -2,10 +2,11 @@ var argv = require('optimist').argv;
 var Utils = require('./utils');
 var request = require('request');
 var url = require('url');
+var Status = require('./status');
 
 const CONFIGS = require('../configs/config.json');
 
-function resolveIssue(jiraId, resolution, comment) {
+function resolve(jiraId, resolution, comment) {
   if (resolution) {
     resolution = argv.resolution;
   }
@@ -41,17 +42,13 @@ function resolveIssue(jiraId, resolution, comment) {
   Utils.getAllHeaders(function (headers) {
     options.headers = headers;
     request(options, function (err, response, body) {
-      console.log(err);
-      console.log(response.statusCode);
-      console.log(body);
+      if (err || body.errors) {
+        sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
+        return;
+      }
+      Status.status(jiraId);
     });
   });
 }
 
-function resolve() {
-  resolveIssue(argv.resolve, argv.resolution, argv.comment);
-
-}
-
 module.exports.resolve = resolve;
-module.exports.resolveIssue = resolveIssue;

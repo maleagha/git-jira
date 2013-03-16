@@ -6,12 +6,12 @@ var url = require('url');
 
 const CONFIGS = require('../configs/config.json');
 
-function status() {
+function status(jiraId) {
   var options = {
     url:url.format({
       host:CONFIGS.JIRA_HOST,
       protocol:'https',
-      pathname:CONFIGS.ISSUE_PATH + argv.status}),
+      pathname:CONFIGS.ISSUE_PATH + jiraId}),
     qs:{fields:'summary,id,status,assignee,description'},
     method: 'GET',
     json:{}
