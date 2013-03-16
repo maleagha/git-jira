@@ -1,53 +1,51 @@
 var argv = require('optimist').argv;
 var exec = require('child_process').exec;
 var sys = require('sys');
-var request = require('request');
-var url = require('url');
-var colors = require('colors');
 var Utils = require('./utils');
 var Resolve = require('./resolve');
+var CodeReview = require('./codeReview');
 
-const CONFIGS = require('../configs/config.json');
 
 function dcommit() {
-
-  //TODO change this to use rb rest API
-  //make sure git-review is available
-  exec('git-review status', function(err, stdout, stderr){
-    if (err) {
-      sys.puts('Something went wrong: ', err);
-      //try to grab the last comment and put it as JIRA comment
-      getLastGitCommit(function(err, lastCommitLog){
-       if (!err && lastCommitLog) {
-         Resolve.resolve(argv.dcommit, undefined, lastCommitLog);
-       }
-      });
-
-    } else {
-      //1. close the review board if they have it
-      exec('git-review dcommit -s', function(err, stdout, stderr){
-
-
-        //2. resolve JIRA ticket with a comment including:
-        // a) RB link and id
-        // b) commit's comment + log
-        getLastGitCommit(function(err, lastCommitLog){
-          if (!err && lastCommitLog) {
-            Resolve.resolve(argv.dcommit, undefined, lastCommitLog);
-          }
-        });
-      });
+  CodeReview.closeReviewBoard(function(err, rb){
+    if(err) {
+      if (err === 'pending') {
+        sys.puts('The code review is still pending.','dcommit aborted');
+        return;
+      }
+      sys.puts('Something went wrong while closing the review', err);
     }
+
+    getLastGitCommit(function(err, lastCommitLog){
+      if (!err && lastCommitLog) {
+        if (rb) {
+          //if there is any review board information add it to the comments
+          lastCommitLog += '\n\n';
+          lastCommitLog += rb;
+        }
+        //get the branch name
+        if(typeof argv.dcommit === 'string') {
+          Resolve.resolve(argv.dcommit, undefined, lastCommitLog);
+        } else {
+          getBranchName(function(branchName){
+            Resolve.resolve(branchName, undefined, lastCommitLog);
+          })
+        }
+      }
+    });
   });
-
-
-
 }
 
 function getLastGitCommit(callback) {
   exec('git log --name-status HEAD~1..HEAD', function(err, stdout, stderr){
     sys.puts(err, stdout);
     return callback(err, stdout);
+  });
+}
+
+function getBranchName(callback) {
+  exec('git rev-parse --abbrev-ref HEAD', function(err, stdout){
+    return callback((stdout || '').replace('\n',''));
   });
 }
 

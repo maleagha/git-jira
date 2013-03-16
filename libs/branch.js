@@ -8,11 +8,11 @@ var Utils = require('./utils');
 var Status = require('./status');
 
 const CONFIGS = require('../configs/config.json');
-const MAX_BRANCH_NAME_LENGTH = 60;
+const MAX_BRANCH_NAME_LENGTH = 40;
 
 
 function branch(branch) {
-  if (branch === 'status') {
+  if (branch === 'status' || branch === true) {
     //print out the list of current branches and their corresponding JIRA status
     var regEx = /(MOB-\d+).*/;
     getAllBranchNames(regEx);
@@ -123,30 +123,17 @@ function buildJqlForBranchIds(branchIds) {
 }
 
 function printBranchStatus(issue) {
-  const SPACES = '                                                            ';
+  const SPACES = '                                                  ';
   var branchName = issue.key || 'BRANCH\t';
   var issueStatus = issue && issue.fields && issue.fields.status && issue.fields.status.name || 'STATUS';
   var issueSummary = (issue && issue.fields && issue.fields.summary || 'SUMMARY') + SPACES;
   issueSummary = issueSummary.slice(0, MAX_BRANCH_NAME_LENGTH);
 
-  var assignee = issue && issue.fields && issue.fields.assignee && issue.fields.assignee.displayName || 'ASSIGNEE';
+  var assignee = issue && issue.fields && issue.fields.assignee && issue.fields.assignee.displayName || 'ASSIGNEE\t';
   var items = [branchName,issueSummary,assignee,issueStatus];
   var statusStr = items.join('\t\t');
 
-  switch(issueStatus) {
-    case 'Closed':
-      sys.puts(statusStr.grey);
-      break;
-    case 'Open':
-      sys.puts(statusStr.red);
-      break;
-    case 'Resolved':
-      sys.puts(statusStr.green);
-      break;
-    case 'STATUS':
-      sys.puts(statusStr.bold.white);
-      break;
-  }
+  Utils.colorPrintWithStatus(issueStatus, statusStr);
 }
 
 module.exports.branch = branch;

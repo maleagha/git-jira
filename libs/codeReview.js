@@ -7,10 +7,17 @@ function closeReviewBoard(callback) {
     if (err) {
       sys.puts('Something went wrong: ', err);
       return callback(err);
-    } else {
+    } else if (stdout.indexOf('pending review by') != -1) {
+      return callback('pending');
+    }
+    else {
+      var rbStatus = stdout || '';
       //close the review board if there is any
       exec('git-review dcommit -s', function(err, stdout, stderr){
-        return callback(err, stdout);
+        rbStatus += '\n\n';
+        rbStatus += stdout;
+
+        return callback(err, rbStatus);
       });
     }
   });

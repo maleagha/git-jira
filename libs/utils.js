@@ -57,5 +57,29 @@ function handleResponse(successCallback) {
   }
 }
 
+function colorPrintWithStatus(issueStatus, statusStr) {
+  switch (issueStatus) {
+    case 'Closed':
+      sys.puts(statusStr.grey);
+      break;
+    case 'Open':
+      sys.puts(statusStr.red);
+      break;
+    case 'Resolved':
+      sys.puts(statusStr.green);
+      break;
+    case 'In Progress':
+      sys.puts(statusStr.magenta);
+      break;
+    case 'Reopened':
+      sys.puts(statusStr.yellow);
+      break;
+    case 'STATUS':
+      sys.puts(statusStr.bold.white);
+      break;
+  }
+}
+
 module.exports.getAllHeaders = getAllHeaders;
 module.exports.handleResponse = handleResponse;
+module.exports.colorPrintWithStatus = colorPrintWithStatus;

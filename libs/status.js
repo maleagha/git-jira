@@ -3,6 +3,7 @@ var sys = require('sys');
 var Utils = require('./utils');
 var request = require('request');
 var url = require('url');
+var colors = require('colors');
 
 const CONFIGS = require('../configs/config.json');
 
@@ -25,12 +26,21 @@ function status(jiraId) {
 }
 
 function printSingleStatus(body) {
-  sys.puts('---------------------------------------------');
-  sys.puts('KEY:       ' + body && body.key || '');
-  sys.puts('SUMMARY:  ' + body && body.fields && body.fields.summary || '');
-  sys.puts('STATUS:   ' + body && body.fields && body.fields.status && body.fields.status.name);
-  sys.puts('ASSIGNEE: ' + body && body.fields && body.fields.assignee && body.fields.assignee.displayName);
-  sys.puts('---------------------------------------------');
+  const DASH = '------------------------------------------------------------------------------------------';
+  var header = ['KEY','SUMMARY','STATUS','ASSIGNEE'];
+  var key = body && body.key || '';
+  var summary = (body && body.fields && body.fields.summary || '').slice(0,50);
+  var status = body && body.fields && body.fields.status && body.fields.status.name;
+  var assignee = body && body.fields && body.fields.assignee && body.fields.assignee.displayName;
+
+  var headerStr = header.join('\t\t\t');
+  var statusStr = [key,summary,status,assignee].join('\t\t');
+
+  //print
+  Utils.colorPrintWithStatus(status, DASH);
+  Utils.colorPrintWithStatus('STATUS',headerStr);
+  Utils.colorPrintWithStatus(status, statusStr);
+  Utils.colorPrintWithStatus(status, DASH);
 }
 
 module.exports.status = status;
