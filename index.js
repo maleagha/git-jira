@@ -1,12 +1,28 @@
 #!/usr/bin/env node
 
 var request = require('request');
-var argv = require('optimist').argv;
+var Optimist = require('optimist');
+var argv = Optimist
+  .usage('$0: Command line tool to act as a bridge between jira and git')
+  .describe('branch', 'Create a feature branch corresponding to the bug id MOB-123 and update the corresponding ' +
+    'ticket to mark it as "In Progress"\n\tUsage: git-jira --branch MOB-123 \n\t       git-jira --branch status')
+  .describe('status', 'Get the status of the bug Id' +
+    '\n\tUsage: git-jira --status MOB-123')
+  .describe('resolve', 'Resolve a bug to mark it as fixed. You can provide additional arguments --resolution and' +
+    '--comment\n\tUsage: git-jira --resolve MOB-123 --comment "Fixed now" --resolution "Fixed"')
+  .describe('dcommit', 'Resolves a bug with the last commit in the feature branch and closes the reviewboard ' +
+    'associated.\n\tUsage: git-jira --dcommit MOB-123')
+  .argv;
+var sys = require('sys');
 
 var Branch = require('./libs/branch');
 var Status = require('./libs/status');
 var Resolve = require('./libs/resolve');
 var Dcommit = require('./libs/dcommit');
+
+if (argv && argv.help) {
+  sys.puts(Optimist.help());
+}
 
 //--branch MOB-123 command
 if (argv && argv.branch) {
