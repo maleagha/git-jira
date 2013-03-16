@@ -5,9 +5,8 @@ var url = require('url');
 
 const CONFIGS = require('../configs/config.json');
 
-function resolve() {
-  var resolution = "Fixed";
-  if (argv.resolution) {
+function resolveIssue(jiraId, resolution, comment) {
+  if (resolution) {
     resolution = argv.resolution;
   }
   json = {
@@ -20,7 +19,7 @@ function resolve() {
       'id': '5'
     }
   };
-  if (argv.comment) {
+  if (comment) {
     json.update = {
       'comment': [
         {
@@ -35,7 +34,7 @@ function resolve() {
     url: url.format({
       host: CONFIGS.JIRA_HOST,
       protocol: 'https',
-      pathname: CONFIGS.ISSUE_PATH + argv.resolve + '/transitions'}),
+      pathname: CONFIGS.ISSUE_PATH + jiraId + '/transitions'}),
     method: 'POST',
     json: json
   };
@@ -49,4 +48,10 @@ function resolve() {
   });
 }
 
+function resolve() {
+  resolveIssue(argv.resolve, argv.resolution, argv.comment);
+
+}
+
 module.exports.resolve = resolve;
+module.exports.resolveIssue = resolveIssue;
