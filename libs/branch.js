@@ -47,11 +47,7 @@ function createBranchByJiraId(jiraId) {
     json : {}
   };
   //first gets JIRA ticket's information
-  request(options, function (err, response, body) {
-    if (err || body.errors) {
-      sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
-      return;
-    }
+  request(options,  Utils.handleResponse(function(body) {
     var jiraKey = (body && body.key || '');
     var jiraSummary = body && body.fields && body.fields.summary || '';
     jiraSummary = jiraSummary.replace(/\s/g, '_');
@@ -73,7 +69,7 @@ function createBranchByJiraId(jiraId) {
         sys.puts('branch was successfully created!');
       }
     });
-  });
+  }));
 }
 
 function changeStatusToInProgress(jiraId) {
@@ -92,13 +88,9 @@ function changeStatusToInProgress(jiraId) {
   };
   Utils.getAllHeaders(function (headers) {
     options.headers = headers;
-    request(options, function (err, response, body) {
-      if (err || body.errors) {
-        sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
-        return;
-      }
+    request(options,  Utils.handleResponse(function(body) {
       Status.status(jiraId);
-    });
+    }));
   });
 }
 
@@ -113,17 +105,13 @@ function queryJiraByBranchIds(branchIds) {
     json : {}
   };
 
-  request(options, function (err, response, body) {
-    if (err || body.errors) {
-      sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
-      return;
-    }
+  request(options,  Utils.handleResponse(function(body) {
     const HEADER = {};
     var issues = (body.issues || []);
     issues.unshift(HEADER);
     issues.forEach(printBranchStatus);
 
-  });
+  }));
 }
 
 function buildJqlForBranchIds(branchIds) {

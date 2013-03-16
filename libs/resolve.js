@@ -5,11 +5,11 @@ var url = require('url');
 var Status = require('./status');
 
 const CONFIGS = require('../configs/config.json');
-
+const RESOLUTION_MAP = {
+  FIXED: 'Fixed'
+}
 function resolve(jiraId, resolution, comment) {
-  if (resolution) {
-    resolution = argv.resolution;
-  }
+  resolution = resolution || RESOLUTION_MAP.FIXED;
   json = {
     'fields': {
       'resolution': {
@@ -25,7 +25,7 @@ function resolve(jiraId, resolution, comment) {
       'comment': [
         {
           'add': {
-            'body': argv.comment
+            'body': comment
           }
         }
       ]
@@ -41,13 +41,9 @@ function resolve(jiraId, resolution, comment) {
   };
   Utils.getAllHeaders(function (headers) {
     options.headers = headers;
-    request(options, function (err, response, body) {
-      if (err || body.errors) {
-        sys.puts('something went wrong:',(err ? err : body.errorMessages[0]));
-        return;
-      }
+    request(options, Utils.handleResponse(function(body) {
       Status.status(jiraId);
-    });
+    }));
   });
 }
 

@@ -1,5 +1,6 @@
 var fs = require('fs');
 var read = require('read');
+var sys = require('sys');
 
 function getAllHeaders(callback) {
   var headers = {};
@@ -46,4 +47,15 @@ function getUserNamePassword(callback) {
   });
 }
 
+function handleResponse(successCallback) {
+  return function(err, response, body) {
+    if (err || response.errors) {
+      sys.puts('something went wrong:',(err ? err : response.errorMessages[0]));
+    } else {
+      successCallback(body);
+    }
+  }
+}
+
 module.exports.getAllHeaders = getAllHeaders;
+module.exports.handleResponse = handleResponse;

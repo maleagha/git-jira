@@ -6,6 +6,7 @@ var argv = require('optimist').argv;
 var Branch = require('./libs/branch');
 var Status = require('./libs/status');
 var Resolve = require('./libs/resolve');
+var Dcommit = require('./libs/dcommit');
 
 //--branch MOB-123 command
 if (argv && argv.branch) {
@@ -25,6 +26,6 @@ if (argv && argv.resolve) {
 
 // --dcommit MOB-123 command
 if (argv && argv.dcommit) {
-
+  Dcommit.dcommit();
 }
 
