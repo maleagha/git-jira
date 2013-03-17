@@ -4,25 +4,30 @@ var Utils = require('./utils');
 var request = require('request');
 var url = require('url');
 var colors = require('colors');
+var Branch = require('./branch');
 
 const CONFIGS = require('../configs/config.json');
 
 function status(jiraId) {
-  var options = {
-    url:url.format({
-      host:CONFIGS.JIRA_HOST,
-      protocol:'https',
-      pathname:CONFIGS.ISSUE_PATH + jiraId}),
-    qs:{fields:'summary,id,status,assignee,description'},
-    method: 'GET',
-    json:{}
-  };
-  Utils.getAllHeaders(function(headers) {
-    options.headers = headers;
-    request(options, function(err, response, body){
-      printSingleStatus(body);
+  if (jiraId === true) {
+    Branch.branch(true);
+  } else {
+    var options = {
+      url:url.format({
+        host:CONFIGS.JIRA_HOST,
+        protocol:'https',
+        pathname:CONFIGS.ISSUE_PATH + jiraId}),
+      qs:{fields:'summary,id,status,assignee,description'},
+      method: 'GET',
+      json:{}
+    };
+    Utils.getAllHeaders(function(headers) {
+      options.headers = headers;
+      request(options, function(err, response, body){
+        printSingleStatus(body);
+      });
     });
-  });
+  }
 }
 
 function printSingleStatus(body) {
