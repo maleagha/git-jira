@@ -27,7 +27,7 @@ function dcommit() {
         if(typeof argv.dcommit === 'string') {
           Resolve.resolve(argv.dcommit, undefined, lastCommitLog);
         } else {
-          getBranchName(function(branchName){
+          Utils.getBranchName(function(branchName){
             Resolve.resolve(branchName, undefined, lastCommitLog);
           })
         }
@@ -42,12 +42,5 @@ function getLastGitCommit(callback) {
     return callback(err, stdout);
   });
 }
-
-function getBranchName(callback) {
-  exec('git rev-parse --abbrev-ref HEAD', function(err, stdout){
-    return callback((stdout || '').replace('\n',''));
-  });
-}
-
 
 module.exports.dcommit = dcommit;

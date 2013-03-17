@@ -22,6 +22,8 @@ More Examples
     $ git-jira --branch     // Shows the list of all branches with their corresponding JIRA tickets status
     $ git-jira --status     // Same command.
     $ git-jira --status MOB-123     // Status of a particular bug
+    $ git-jira --comment "Test Comment" --id MOB-123    // Adds a comment to the bug MOB-123.
+    $ git-jira --comment "Test Comment"    // Adds a comment to the bug referred by the current branch.
 
 
 Misc

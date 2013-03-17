@@ -49,8 +49,20 @@ function getUserNamePassword(callback) {
 
 function handleResponse(successCallback) {
   return function(err, response, body) {
-    if (err || response.errors) {
-      sys.puts('something went wrong:',(err ? err : response.errorMessages[0]));
+    var error;
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (err) {
+        error = err;
+      } else if (response.errors) {
+        error = JSON.stringify(response.errors);
+      } else if (body && body.errorMessages && body.errorMessages.length > 0) {
+        error = JSON.stringify(body.errorMessages);
+      } else {
+        error = JSON.stringify(body);
+      }
+    }
+    if (error) {
+      sys.puts('something went wrong:', error);
     } else {
       successCallback(body);
     }
@@ -80,6 +92,13 @@ function colorPrintWithStatus(issueStatus, statusStr) {
   }
 }
 
+function getBranchName(callback) {
+  exec('git rev-parse --abbrev-ref HEAD', function(err, stdout){
+    return callback((stdout || '').replace('\n',''));
+  });
+}
+
 module.exports.getAllHeaders = getAllHeaders;
 module.exports.handleResponse = handleResponse;
 module.exports.colorPrintWithStatus = colorPrintWithStatus;
+module.exports.getBranchName = getBranchName;

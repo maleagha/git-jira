@@ -12,6 +12,8 @@ var argv = Optimist
     '--comment\n\tUsage: git-jira --resolve MOB-123 --comment "Fixed now" --resolution "Fixed"')
   .describe('dcommit', 'Resolves a bug with the last commit in the feature branch and closes the reviewboard ' +
     'associated.\n\tUsage: git-jira --dcommit MOB-123')
+  .describe('comment', 'Adds a comment to the bug specified or the bug based on branch you are in ' +
+    '\n\tUsage: git-jira --comment "Test comment" --id MOB-123')
   .argv;
 var sys = require('sys');
 
@@ -19,6 +21,7 @@ var Branch = require('./libs/branch');
 var Status = require('./libs/status');
 var Resolve = require('./libs/resolve');
 var Dcommit = require('./libs/dcommit');
+var Comment = require('./libs/comment');
 
 if (argv && argv.help) {
   sys.puts(Optimist.help());
@@ -38,6 +41,10 @@ if (argv && argv.status) {
 
 if (argv && argv.resolve) {
   Resolve.resolve(argv.resolve, argv.resolution, argv.comment);
+}
+
+if (argv && argv.comment && !argv.resolve) {
+  Comment.comment(argv.id, argv.comment);
 }
 
 // --dcommit MOB-123 command
