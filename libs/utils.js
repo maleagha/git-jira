@@ -1,6 +1,7 @@
 var fs = require('fs');
 var read = require('read');
 var sys = require('sys');
+var exec = require('child_process').exec;
 
 function getAllHeaders(callback) {
   var headers = {};
