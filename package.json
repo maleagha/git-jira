@@ -1,6 +1,6 @@
 {
   "name": "git-jira",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "This module integrates JIRA into Git",
   "main": "index.js",
   "scripts": {
