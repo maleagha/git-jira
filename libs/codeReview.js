@@ -23,4 +23,16 @@ function closeReviewBoard(callback) {
   });
 }
 
+function reviewBoardStatus(callback) {
+  exec('git-review status', function(err, stdout, stderr){
+    if (err) {
+      sys.puts('Something went wrong while getting rb status: ', err);
+      return callback(err);
+    }
+    var rbStatus = stdout || '';
+    callback(null, rbStatus);
+  });
+}
+
 module.exports.closeReviewBoard = closeReviewBoard;
+module.exports.reviewBoardStatus = reviewBoardStatus;

@@ -3,10 +3,41 @@ var exec = require('child_process').exec;
 var sys = require('sys');
 var Utils = require('./utils');
 var Resolve = require('./resolve');
+var Comment = require('./comment');
 var CodeReview = require('./codeReview');
 
-
 function dcommit() {
+  if (argv.s === true) {
+    dcommitAndClose();
+  } else {
+    dcommitAndUpdate();
+  }
+}
+
+function dcommitAndUpdate() {
+  CodeReview.reviewBoardStatus(function(err, rbStatus){
+    getLastGitCommit(function(err, lastCommitLog){
+      if (!err && lastCommitLog) {
+        if (rbStatus) {
+          //if there is any review board information add it to the comments
+          lastCommitLog += '\n\n';
+          lastCommitLog += 'Review Board Status:\n';
+          lastCommitLog += rbStatus;
+        }
+        //get the branch name
+        if(typeof argv.dcommit === 'string') {
+          Comment.comment(argv.dcommit, lastCommitLog);
+        } else {
+          Utils.getBranchName(function(branchName){
+            Comment.comment(branchName, lastCommitLog);
+          })
+        }
+      }
+    });
+  });
+}
+
+function dcommitAndClose() {
   CodeReview.closeReviewBoard(function(err, rb){
     if(err) {
       if (err === 'pending') {
@@ -21,6 +52,7 @@ function dcommit() {
         if (rb) {
           //if there is any review board information add it to the comments
           lastCommitLog += '\n\n';
+          lastCommitLog += 'Review Board Status:\n';
           lastCommitLog += rb;
         }
         //get the branch name
