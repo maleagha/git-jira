@@ -22,6 +22,16 @@
   "colors": ">=0.6.0-1"
 },
   "author": "",
+  "contributors":[
+    {
+     "name" : "maleagha",
+     "email" : "mohamad.aleagha@gmail.com"
+    },
+    {
+     "name":"deepankgupta",
+     "email":"deepankgupta@gmail.com"
+    }
+  ],
   "license": "BSD",
   "preferGlobal": "true",
   "bin": {
