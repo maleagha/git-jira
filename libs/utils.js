@@ -99,8 +99,6 @@ function colorPrintWithStatus(issueStatus, statusStr) {
       break;
     case 'STATUS':
       sys.puts(statusStr.bold.white);
-    default:
-      sys.puts(statusStr.bold.white);
       break;
   }
 }
