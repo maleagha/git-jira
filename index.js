@@ -16,39 +16,42 @@ var argv = Optimist
     '\n\tUsage: git-jira --comment "Test comment" --id MOB-123')
   .argv;
 var sys = require('sys');
-
 var Branch = require('./libs/branch');
 var Status = require('./libs/status');
 var Resolve = require('./libs/resolve');
 var Dcommit = require('./libs/dcommit');
 var Comment = require('./libs/comment');
+var Utils = require('./libs/utils');
 
-if (argv && argv.help) {
-  sys.puts(Optimist.help());
-}
+
+Utils.verifyAuthFile(function init(){
+  if (argv && argv.help) {
+    sys.puts(Optimist.help());
+  }
 
 //--branch MOB-123 command
-if (argv && argv.branch || (argv.branch = argv._ && argv._[0] === 'branch')) {
-  Branch.branch(argv.branch);
-}
+  if (argv && argv.branch || (argv.branch = argv._ && argv._[0] === 'branch')) {
+    Branch.branch(argv.branch);
+  }
 
 //--status MOB-123 command
-if (argv && argv.status) {
-  Status.status(argv.status);
-}
+  if (argv && argv.status) {
+    Status.status(argv.status);
+  }
 
 // --resolve MOB-123 command
 
-if (argv && argv.resolve) {
-  Resolve.resolve(argv.resolve, argv.resolution, argv.comment);
-}
+  if (argv && argv.resolve) {
+    Resolve.resolve(argv.resolve, argv.resolution, argv.comment);
+  }
 
-if (argv && argv.comment && !argv.resolve) {
-  Comment.comment(argv.id, argv.comment);
-}
+  if (argv && argv.comment && !argv.resolve) {
+    Comment.comment(argv.id, argv.comment);
+  }
 
 // --dcommit MOB-123 command
-if (argv && argv.dcommit) {
-  Dcommit.dcommit();
-}
+  if (argv && argv.dcommit) {
+    Dcommit.dcommit();
+  }
+});
 

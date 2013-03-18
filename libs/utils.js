@@ -3,6 +3,12 @@ var read = require('read');
 var sys = require('sys');
 var exec = require('child_process').exec;
 
+const AUTH_FILE = './.git/info/.git-jira';
+
+function hasAuthFile() {
+  return fs.existsSync(AUTH_FILE);
+}
+
 function getAllHeaders(callback) {
   var headers = {};
   headers['Content-Type'] = 'application/json';
@@ -18,15 +24,14 @@ function getHeaderData(authenticationString) {
 
 function getAuthorizationHeader(callback) {
   var authenticationString = '';
-  var filename = './.git/info/.git-jira';
-  if (!fs.existsSync(filename)) {
+  if (!hasAuthFile()) {
     getUserNamePassword(function(username, password) {
       var authenticationString = username + ':' + password;
-      fs.writeFileSync(filename, authenticationString);
+      fs.writeFileSync(AUTH_FILE, authenticationString);
       callback(getHeaderData(authenticationString));
     });
   } else {
-    authenticationString = fs.readFileSync(filename);
+    authenticationString = fs.readFileSync(AUTH_FILE);
     callback(getHeaderData(authenticationString));
   }
 }
@@ -61,6 +66,11 @@ function handleResponse(successCallback) {
       } else {
         error = JSON.stringify(body);
       }
+
+      //remove the AUTH-FILE
+      if(response.statusCode == 401) {
+        removeAuthFile();
+      }
     }
     if (error) {
       sys.puts('something went wrong:', error);
@@ -89,6 +99,8 @@ function colorPrintWithStatus(issueStatus, statusStr) {
       break;
     case 'STATUS':
       sys.puts(statusStr.bold.white);
+    default:
+      sys.puts(statusStr.bold.white);
       break;
   }
 }
@@ -99,7 +111,25 @@ function getBranchName(callback) {
   });
 }
 
+function verifyAuthFile(callback) {
+  if(hasAuthFile()) {
+    return callback()
+  } else {
+    getUserNamePassword(function(username, password) {
+      var authenticationString = username + ':' + password;
+      fs.writeFileSync(AUTH_FILE, authenticationString);
+      return callback();
+    });
+  }
+}
+
+function removeAuthFile() {
+  fs.unlinkSync(AUTH_FILE)
+  sys.puts('successfully deleted:',AUTH_FILE);
+}
+
 module.exports.getAllHeaders = getAllHeaders;
 module.exports.handleResponse = handleResponse;
 module.exports.colorPrintWithStatus = colorPrintWithStatus;
 module.exports.getBranchName = getBranchName;
+module.exports.verifyAuthFile = verifyAuthFile;
