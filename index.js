@@ -28,7 +28,7 @@ if (argv && argv.help) {
 }
 
 //--branch MOB-123 command
-if (argv && argv.branch) {
+if (argv && argv.branch || (argv.branch = argv._ && argv._[0] === 'branch')) {
   Branch.branch(argv.branch);
 }
 
