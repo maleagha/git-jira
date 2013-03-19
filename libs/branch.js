@@ -86,12 +86,10 @@ function changeStatusToInProgress(jiraId) {
     method: 'POST',
     json: json
   };
-  Utils.getAllHeaders(function (headers) {
-    options.headers = headers;
-    request(options,  Utils.handleResponse(function(body) {
-      Status.status(jiraId);
-    }));
-  });
+  options.headers = Utils.getAllHeaders();
+  request(options,  Utils.handleResponse(function(body) {
+    Status.status(jiraId);
+  }));
 }
 
 function queryJiraByBranchIds(branchIds) {

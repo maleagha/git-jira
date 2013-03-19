@@ -23,35 +23,31 @@ var Dcommit = require('./libs/dcommit');
 var Comment = require('./libs/comment');
 var Utils = require('./libs/utils');
 
+if (argv && argv.help) {
+  sys.puts(Optimist.help());
+}
 
-Utils.verifyAuthFile(function init(){
-  if (argv && argv.help) {
-    sys.puts(Optimist.help());
-  }
-
-//--branch MOB-123 command
-  if (argv && argv.branch || (argv.branch = argv._ && argv._[0] === 'branch')) {
+function main() {
+  if (argv && argv.branch) {
     Branch.branch(argv.branch);
+    return;
   }
-
-//--status MOB-123 command
   if (argv && argv.status) {
     Status.status(argv.status);
+    return;
   }
-
-// --resolve MOB-123 command
-
   if (argv && argv.resolve) {
     Resolve.resolve(argv.resolve, argv.resolution, argv.comment);
+    return;
   }
-
-  if (argv && argv.comment && !argv.resolve) {
+  if (argv && argv.comment) {
     Comment.comment(argv.id, argv.comment);
+    return;
   }
-
-// --dcommit MOB-123 command
   if (argv && argv.dcommit) {
     Dcommit.dcommit();
+    return;
   }
-});
+}
 
+Utils.verifyAuthFile(main);

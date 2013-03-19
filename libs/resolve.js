@@ -39,12 +39,10 @@ function resolve(jiraId, resolution, comment) {
     method: 'POST',
     json: json
   };
-  Utils.getAllHeaders(function (headers) {
-    options.headers = headers;
-    request(options, Utils.handleResponse(function(body) {
-      Status.status(jiraId);
-    }));
-  });
+  options.headers = Utils.getAllHeaders();
+  request(options, Utils.handleResponse(function(body) {
+    Status.status(jiraId);
+  }));
 }
 
 module.exports.resolve = resolve;

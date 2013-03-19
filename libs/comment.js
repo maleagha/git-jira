@@ -25,13 +25,11 @@ function comment(jiraId, comment) {
     method: 'POST',
     json: json
   };
-  Utils.getAllHeaders(function (headers) {
-    options.headers = headers;
-    request(options, Utils.handleResponse(function(body) {
-      sys.puts('Comment added: ', comment);
-      Status.status(jiraId);
-    }));
-  });
+  options.headers = Utils.getAllHeaders();
+  request(options, Utils.handleResponse(function(body) {
+    sys.puts('Comment added: ', comment);
+    Status.status(jiraId);
+  }));
 }
 
 module.exports.comment = comment;

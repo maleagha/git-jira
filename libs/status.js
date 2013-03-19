@@ -21,11 +21,9 @@ function status(jiraId) {
       method: 'GET',
       json:{}
     };
-    Utils.getAllHeaders(function(headers) {
-      options.headers = headers;
-      request(options, function(err, response, body){
-        printSingleStatus(body);
-      });
+    options.headers = Utils.getAllHeaders();
+    request(options, function(err, response, body){
+      printSingleStatus(body);
     });
   }
 }

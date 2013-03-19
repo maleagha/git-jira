@@ -9,30 +9,25 @@ function hasAuthFile() {
   return fs.existsSync(AUTH_FILE);
 }
 
-function getAllHeaders(callback) {
+function getAllHeaders() {
   var headers = {};
   headers['Content-Type'] = 'application/json';
-  getAuthorizationHeader(function(authenticationHeader) {
-    headers['Authorization'] = authenticationHeader;
-    callback(headers);
-  });
+  headers['Authorization'] = getAuthorizationHeader();
+  return headers;
 }
 
 function getHeaderData(authenticationString) {
   return ('Basic ' + new Buffer(authenticationString).toString('base64'));
 }
 
-function getAuthorizationHeader(callback) {
+function getAuthorizationHeader() {
   var authenticationString = '';
   if (!hasAuthFile()) {
-    getUserNamePassword(function(username, password) {
-      var authenticationString = username + ':' + password;
-      fs.writeFileSync(AUTH_FILE, authenticationString);
-      callback(getHeaderData(authenticationString));
-    });
+    sys.puts('No Authorization file present.');
+    return null;
   } else {
     authenticationString = fs.readFileSync(AUTH_FILE);
-    callback(getHeaderData(authenticationString));
+    return authenticationString;
   }
 }
 
@@ -57,7 +52,11 @@ function handleResponse(successCallback) {
   return function(err, response, body) {
     var error;
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      if (err) {
+      //remove the AUTH-FILE
+      if(response.statusCode === 401) {
+        removeAuthFile();
+        error = 'Authorization failed';
+      } else if (err) {
         error = err;
       } else if (response.errors) {
         error = JSON.stringify(response.errors);
@@ -66,14 +65,9 @@ function handleResponse(successCallback) {
       } else {
         error = JSON.stringify(body);
       }
-
-      //remove the AUTH-FILE
-      if(response.statusCode == 401) {
-        removeAuthFile();
-      }
     }
     if (error) {
-      sys.puts('something went wrong:', error);
+      sys.puts('Something went wrong:', error);
     } else {
       successCallback(body);
     }
@@ -111,11 +105,11 @@ function getBranchName(callback) {
 
 function verifyAuthFile(callback) {
   if(hasAuthFile()) {
-    return callback()
+    return callback();
   } else {
     getUserNamePassword(function(username, password) {
       var authenticationString = username + ':' + password;
-      fs.writeFileSync(AUTH_FILE, authenticationString);
+      fs.writeFileSync(AUTH_FILE, getHeaderData(authenticationString));
       return callback();
     });
   }
@@ -123,7 +117,6 @@ function verifyAuthFile(callback) {
 
 function removeAuthFile() {
   fs.unlinkSync(AUTH_FILE)
-  sys.puts('successfully deleted:',AUTH_FILE);
 }
 
 module.exports.getAllHeaders = getAllHeaders;
