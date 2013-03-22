@@ -12,7 +12,10 @@ const MAX_BRANCH_NAME_LENGTH = 40;
 
 
 function branch(branch) {
-  if (branch === 'status' || branch === true) {
+  if (branch === true && argv.D && (argv.D === 'closed' || argv.C)) {
+    //delete the branches associated with closed JIRA tickets
+    removeClosedJiraBranches();
+  } else if (branch === 'status' || branch === true) {
     //print out the list of current branches and their corresponding JIRA status
     var regEx = /(MOB-\d+).*/;
     getAllBranchNames(regEx);
@@ -23,7 +26,23 @@ function branch(branch) {
   }
 }
 
-function getAllBranchNames(regEx) {
+function removeClosedJiraBranches(){
+  var regEx = /(MOB-\d+).*/;
+  var options = {status:'Closed'};
+  getAllBranchNames(regEx, options,function(issues){
+    (issues || []).forEach(function rm(issue){
+      if (issue && issue.key && issue.fields && issue.fields.status &&
+        issue.fields.status.name === 'Closed'){
+        sys.puts('git branch -D ' + issue.key);
+        exec('git branch -D ' + issue.key, function (err, stdout, stderr) {
+          sys.puts(err, stdout, stderr);
+        });
+      }
+    });
+  });
+}
+
+function getAllBranchNames(regEx, options, callback) {
   exec('git branch', function (err, stdout, stderr) {
     var branches = (stdout || []).split('\n');
     var branchIds = [];
@@ -33,7 +52,7 @@ function getAllBranchNames(regEx) {
         branchIds.push(id);
       }
     });
-    queryJiraByBranchIds(branchIds);
+    queryJiraByBranchIds(branchIds, options, callback);
   });
 }
 
@@ -92,13 +111,13 @@ function changeStatusToInProgress(jiraId) {
   }));
 }
 
-function queryJiraByBranchIds(branchIds) {
+function queryJiraByBranchIds(branchIds, options, callback) {
   var options = {
     url:url.format({
       host:CONFIGS.JIRA_HOST,
       protocol:'https',
       pathname:CONFIGS.SEARCH_PATH}),
-    qs : {jql:buildJqlForBranchIds(branchIds),
+    qs : {jql:buildJqlForBranchIds(branchIds,options),
       fields : 'summary,id,status,assignee,description'},
     json : {}
   };
@@ -109,15 +128,26 @@ function queryJiraByBranchIds(branchIds) {
     issues.unshift(HEADER);
     issues.forEach(printBranchStatus);
 
+    if(typeof callback === 'function') {
+     callback(issues);
+    }
   }));
 }
 
-function buildJqlForBranchIds(branchIds) {
+function buildJqlForBranchIds(branchIds, options) {
   (branchIds || []).forEach(function(id, index){
-    branchIds[index] = 'issueKey=' + id;
+    branchIds[index] = 'issueKey=' + id + buildJqlForIssueStatus(options);
   });
 
   return branchIds.join(' OR ');
+}
+
+function buildJqlForIssueStatus(options){
+  if (options && options.status) {
+    return ' AND status=' + options.status
+  } else {
+    return '';
+  }
 }
 
 function printBranchStatus(issue) {
