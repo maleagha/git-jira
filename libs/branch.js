@@ -1,6 +1,6 @@
 var argv = require('optimist').argv;
 var exec = require('child_process').exec;
-var sys = require('sys');
+var util = require('util');
 var request = require('request');
 var url = require('url');
 var colors = require('colors');
@@ -33,9 +33,9 @@ function removeClosedJiraBranches(){
     (issues || []).forEach(function rm(issue){
       if (issue && issue.key && issue.fields && issue.fields.status &&
         issue.fields.status.name === 'Closed'){
-        sys.puts('git branch -D ' + issue.key);
+        util.puts('git branch -D ' + issue.key);
         exec('git branch -D ' + issue.key, function (err, stdout, stderr) {
-          sys.puts(err, stdout, stderr);
+          util.puts(err, stdout, stderr);
         });
       }
     });
@@ -81,11 +81,11 @@ function createBranchByJiraId(jiraId) {
     //second create a feature branch
     exec(gitCheckoutBranchCmd, function (err, stdout, stderr) {
       if (err) {
-        sys.puts('something went wrong:' + err);
-        sys.puts(stdout);
-        sys.puts(stderr);
+        util.puts('something went wrong:' + err);
+        util.puts(stdout);
+        util.puts(stderr);
       } else {
-        sys.puts('branch was successfully created!');
+        util.puts('branch was successfully created!');
       }
     });
   }));

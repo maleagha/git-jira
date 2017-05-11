@@ -1,6 +1,6 @@
 var fs = require('fs');
 var read = require('read');
-var sys = require('sys');
+var util = require('util');
 var exec = require('child_process').exec;
 
 const AUTH_FILE = './.git/info/.git-jira';
@@ -23,7 +23,7 @@ function getHeaderData(authenticationString) {
 function getAuthorizationHeader() {
   var authenticationString = '';
   if (!hasAuthFile()) {
-    sys.puts('No Authorization file present.');
+    util.puts('No Authorization file present.');
     return null;
   } else {
     authenticationString = fs.readFileSync(AUTH_FILE);
@@ -67,7 +67,7 @@ function handleResponse(successCallback) {
       }
     }
     if (error) {
-      sys.puts('Something went wrong:', error);
+      util.puts('Something went wrong:', error);
     } else {
       successCallback(body);
     }
@@ -77,22 +77,22 @@ function handleResponse(successCallback) {
 function colorPrintWithStatus(issueStatus, statusStr) {
   switch (issueStatus) {
     case 'Closed':
-      sys.puts(statusStr.grey);
+      util.puts(statusStr.grey);
       break;
     case 'Open':
-      sys.puts(statusStr.red);
+      util.puts(statusStr.red);
       break;
     case 'Resolved':
-      sys.puts(statusStr.green);
+      util.puts(statusStr.green);
       break;
     case 'In Progress':
-      sys.puts(statusStr.magenta);
+      util.puts(statusStr.magenta);
       break;
     case 'Reopened':
-      sys.puts(statusStr.yellow);
+      util.puts(statusStr.yellow);
       break;
     case 'STATUS':
-      sys.puts(statusStr.bold.white);
+      util.puts(statusStr.bold.white);
       break;
   }
 }

@@ -1,11 +1,11 @@
 var exec = require('child_process').exec;
-var sys = require('sys');
+var util = require('util');
 
 function closeReviewBoard(callback) {
   //TODO change this to use rb rest API
   exec('git-review status', function(err, stdout, stderr){
     if (err) {
-      sys.puts('Something went wrong: ', err);
+      util.puts('Something went wrong: ', err);
       return callback(err);
     } else if (stdout.indexOf('pending review by') != -1) {
       return callback('pending');
@@ -26,7 +26,7 @@ function closeReviewBoard(callback) {
 function reviewBoardStatus(callback) {
   exec('git-review status', function(err, stdout, stderr){
     if (err) {
-      sys.puts('Something went wrong while getting rb status: ', err);
+      util.puts('Something went wrong while getting rb status: ', err);
       return callback(err);
     }
     var rbStatus = stdout || '';

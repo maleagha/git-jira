@@ -1,5 +1,5 @@
 var argv = require('optimist').argv;
-var sys = require('sys');
+var util = require('util');
 var Utils = require('./utils');
 var request = require('request');
 var url = require('url');
