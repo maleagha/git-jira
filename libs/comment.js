@@ -3,7 +3,7 @@ var Utils = require('./utils');
 var request = require('request');
 var url = require('url');
 var Status = require('./status');
-var sys = require('sys');
+var util = require('util');
 
 const CONFIGS = require('../configs/config.json');
 
@@ -27,7 +27,7 @@ function comment(jiraId, comment) {
   };
   options.headers = Utils.getAllHeaders();
   request(options, Utils.handleResponse(function(body) {
-    sys.puts('Comment added: ', comment);
+    util.puts('Comment added: ', comment);
     Status.status(jiraId);
   }));
 }

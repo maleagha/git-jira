@@ -15,7 +15,7 @@ var argv = Optimist
   .describe('comment', 'Adds a comment to the bug specified or the bug based on branch you are in ' +
     '\n\tUsage: git-jira --comment "Test comment" --id MOB-123')
   .argv;
-var sys = require('sys');
+var util = require('util');
 var Branch = require('./libs/branch');
 var Status = require('./libs/status');
 var Resolve = require('./libs/resolve');
@@ -24,7 +24,7 @@ var Comment = require('./libs/comment');
 var Utils = require('./libs/utils');
 
 if (argv && argv.help) {
-  sys.puts(Optimist.help());
+  util.puts(Optimist.help());
 }
 
 function main() {

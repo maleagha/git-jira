@@ -1,6 +1,6 @@
 var argv = require('optimist').argv;
 var exec = require('child_process').exec;
-var sys = require('sys');
+var util = require('util');
 var Utils = require('./utils');
 var Resolve = require('./resolve');
 var Comment = require('./comment');
@@ -41,10 +41,10 @@ function dcommitAndClose() {
   CodeReview.closeReviewBoard(function(err, rb){
     if(err) {
       if (err === 'pending') {
-        sys.puts('The code review is still pending.','dcommit aborted');
+        util.puts('The code review is still pending.','dcommit aborted');
         return;
       }
-      sys.puts('Something went wrong while closing the review', err);
+      util.puts('Something went wrong while closing the review', err);
     }
 
     getLastGitCommit(function(err, lastCommitLog){
@@ -70,7 +70,7 @@ function dcommitAndClose() {
 
 function getLastGitCommit(callback) {
   exec('git log --name-status HEAD~1..HEAD', function(err, stdout, stderr){
-    sys.puts(err, stdout);
+    util.puts(err, stdout);
     return callback(err, stdout);
   });
 }
